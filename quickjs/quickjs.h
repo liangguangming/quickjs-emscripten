@@ -194,6 +194,7 @@ static inline JS_BOOL JS_VALUE_IS_NAN(JSValue v)
     
 #else /* !JS_NAN_BOXING */
 
+
 typedef union JSValueUnion {
     int32_t int32;
     double float64;
@@ -696,6 +697,8 @@ JSValue JS_NewStringLen(JSContext *ctx, const char *str1, size_t len1);
 JSValue JS_NewString(JSContext *ctx, const char *str);
 JSValue JS_NewAtomString(JSContext *ctx, const char *str);
 JSValue JS_ToString(JSContext *ctx, JSValueConst val);
+JSValue js_new_string16(JSContext *ctx, const uint16_t *buf, int len);
+// const char *JS_TOCString16(JSContext *ctx, JSValueConst val1);
 JSValue JS_ToPropertyKey(JSContext *ctx, JSValueConst val);
 const char *JS_ToCStringLen2(JSContext *ctx, size_t *plen, JSValueConst val1, JS_BOOL cesu8);
 static inline const char *JS_ToCStringLen(JSContext *ctx, size_t *plen, JSValueConst val1)

@@ -3471,7 +3471,7 @@ static JSValue js_new_string8(JSContext *ctx, const uint8_t *buf, int len)
     return JS_MKPTR(JS_TAG_STRING, str);
 }
 
-static JSValue js_new_string16(JSContext *ctx, const uint16_t *buf, int len)
+JSValue js_new_string16(JSContext *ctx, const uint16_t *buf, int len)
 {
     JSString *str;
     str = js_alloc_string(ctx, len, 1);
@@ -3967,6 +3967,25 @@ JSValue JS_NewAtomString(JSContext *ctx, const char *str)
     JS_FreeAtom(ctx, atom);
     return val;
 }
+
+// const char *JS_TOCString16(JSContext *ctx, JSValueConst val1) {
+//     JSString *str = JS_VALUE_GET_STRING(val1);;
+//     int len = str->len;
+
+//     uint16_t *buf = malloc(sizeof(uint16_t) * len * 2 + 4);
+
+//     buf++;
+//     buf++;
+
+//     const uint16_t *src = str->u.str16;
+
+//     memcpy(buf, str->u.str16, len * 2);
+
+//     buf--;
+//     buf--;
+
+//     return (const char *)buf;
+// }
 
 /* return (NULL, 0) if exception. */
 /* return pointer into a JSString with a live ref_count */

@@ -85,6 +85,27 @@
 #define EvalFlags int
 #define EvalDetectModule int
 
+struct JSString {
+    JSRefCountHeader header; /* must come first, 32-bit */
+    uint32_t len : 31;
+    uint8_t is_wide_char : 1; /* 0 = 8 bits, 1 = 16 bits characters */
+    /* for JS_ATOM_TYPE_SYMBOL: hash = 0, atom_type = 3,
+       for JS_ATOM_TYPE_PRIVATE: hash = 1, atom_type = 3
+       XXX: could change encoding to have one more bit in hash */
+    uint32_t hash : 30;
+    uint8_t atom_type : 2; /* != 0 if atom, JS_ATOM_TYPE_x */
+    uint32_t hash_next; /* atom_index for JS_ATOM_TYPE_SYMBOL */
+#ifdef DUMP_LEAKS
+    struct list_head link; /* string list */
+#endif
+    union {
+        uint8_t str8[0]; /* 8 bit strings will get an extra null terminator */
+        uint16_t str16[0];
+    } u;
+};
+
+typedef struct JSString JSString;
+
 void qts_log(char *msg) {
   fputs(PKG, stderr);
   fputs(msg, stderr);
@@ -312,11 +333,34 @@ double QTS_GetFloat64(JSContext *ctx, JSValueConst *value) {
 }
 
 JSValue *QTS_NewString(JSContext *ctx, BorrowedHeapChar *string) {
-  return jsvalue_to_heap(JS_NewString(ctx, string));
+  uint32_t *str = (uint32_t *)string;
+  int length = *str;
+  str++;
+  const uint16_t * startStr = (const uint16_t *)str;
+  return jsvalue_to_heap(js_new_string16(ctx, startStr, length));
 }
 
 JSBorrowedChar *QTS_GetString(JSContext *ctx, JSValueConst *value) {
-  return JS_ToCString(ctx, *value);
+    JSString *str = JS_VALUE_GET_STRING(*value);
+    int len = str->len;
+
+    uint16_t *buf = malloc(sizeof(uint16_t) * len * 2 + 4);
+
+    uint32_t * p = (uint32_t *)buf;
+
+    p = len;
+
+    buf++;
+    buf++;
+
+    const uint16_t *src = str->u.str16;
+
+    memcpy(buf, str->u.str16, len * 2);
+
+    buf--;
+    buf--;
+
+    return (const char *)buf;
 }
 
 int QTS_IsJobPending(JSRuntime *rt) {

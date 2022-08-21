@@ -192,6 +192,10 @@ export class QuickJSContext implements LowLevelJavascriptVm<QuickJSHandle>, Disp
     this.resolvePromise = this.resolvePromise.bind(this)
   }
 
+  getTestMemory() {
+    return this.memory;
+  }
+
   // @implement Disposable ----------------------------------------------------
 
   get alive() {
@@ -470,8 +474,9 @@ export class QuickJSContext implements LowLevelJavascriptVm<QuickJSHandle>, Disp
    * Converts `handle` to a Javascript string.
    */
   getString(handle: QuickJSHandle): string {
-    this.runtime.assertOwned(handle)
+    // this.runtime.assertOwned(handle)
     return this.memory.consumeJSCharPointer(this.ffi.QTS_GetString(this.ctx.value, handle.value))
+    // return this.memory.UTF16ToString(handle.value);
   }
 
   /**
