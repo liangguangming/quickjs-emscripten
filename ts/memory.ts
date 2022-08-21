@@ -38,21 +38,21 @@ export class ModuleMemory {
     const numBytes = 4 + 2 * str.length
     const ptr = this.module._malloc(numBytes);
 
-    this.module.HEAP32[ptr >> 2] = str.length;
+    this.module.HEAPU32[ptr >> 2] = str.length;
 
     let startPtr: number = (ptr + 4) >> 1;
     for (let i = 0; i < str.length; i++) {
-      this.module.HEAP16[startPtr + i] = str.charCodeAt(i);
+      this.module.HEAPU16[startPtr + i] = str.charCodeAt(i);
     }
     return ptr;
   }
 
   UTF16ToString(ptr: number) {
-    const length = this.module.HEAP32[ptr >> 2];
+    const length = this.module.HEAPU32[ptr >> 2];
     let str = "";
     let startPtr: number = (ptr + 4) >> 1;
     for (let i = 0; i < length; i++) {
-      str += String.fromCharCode(this.module.HEAP16[startPtr + i]);
+      str += String.fromCharCode(this.module.HEAPU16[startPtr + i]);
     }
 
     return str;
@@ -104,7 +104,7 @@ export class ModuleMemory {
       heap[outIdx] = 0;
       return outIdx - startIdx;
     }
-    stringToUTF8Array(str, this.module.HEAPU8 , ptr + 4, numBytes - 4 - 1);
+    stringToUTF8Array(str, this.module.HEAPU8 , ptr + 4, numBytes - 4);
 
     return ptr;
   }

@@ -3,6 +3,7 @@ import { QuickJSDeferredPromise } from "./deferred-promise"
 import type { EitherModule } from "./emscripten-types"
 import { QuickJSUnwrapError } from "./errors"
 import {
+  BorrowedHeapCharPointer,
   EvalDetectModule,
   EvalFlags,
   JSBorrowedCharPointer,
@@ -304,9 +305,10 @@ export class QuickJSContext implements LowLevelJavascriptVm<QuickJSHandle>, Disp
    */
   newString(str: string): QuickJSHandle {
     const ptr = this.memory
-      .newHeapCharPointer(str)
-      .consume((charHandle) => this.ffi.QTS_NewString(this.ctx.value, charHandle.value))
-    return this.memory.heapValueHandle(ptr)
+      .stringToUTF16(str) as BorrowedHeapCharPointer;
+    const handler = new Lifetime(ptr, undefined, (value) => this.module._free(value));
+    const lastPtr = handler.consume((charHandle) => this.ffi.QTS_NewString(this.ctx.value, charHandle.value))
+    return this.memory.heapValueHandle(lastPtr);
   }
 
   /**
@@ -475,7 +477,7 @@ export class QuickJSContext implements LowLevelJavascriptVm<QuickJSHandle>, Disp
    */
   getString(handle: QuickJSHandle): string {
     // this.runtime.assertOwned(handle)
-    return this.memory.consumeJSCharPointer(this.ffi.QTS_GetString(this.ctx.value, handle.value))
+    return this.memory.UTF16ToString(this.ffi.QTS_GetString(this.ctx.value, handle.value))
     // return this.memory.UTF16ToString(handle.value);
   }
 
