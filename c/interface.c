@@ -124,7 +124,7 @@ void qts_dump(JSContext *ctx, JSValueConst value) {
 }
 
 void copy_prop_if_needed(JSContext *ctx, JSValueConst dest, JSValueConst src, const char *prop_name) {
-  JSAtom prop_atom = JS_NewAtom(ctx, prop_name);
+  JSAtom prop_atom = JS_NewAtom(ctx, prop_name); // (TODO: GuangMing)设置属性 Atom
   JSValue dest_prop = JS_GetProperty(ctx, dest, prop_atom);
   if (JS_IsUndefined(dest_prop)) {
     JSValue src_prop = JS_GetProperty(ctx, src, prop_atom);
@@ -472,6 +472,7 @@ MaybeAsync(JSBorrowedChar *) QTS_Dump(JSContext *ctx, JSValueConst *obj) {
     const char *obj_json_chars = JS_ToCString(ctx, obj_json_value);
     JS_FreeValue(ctx, obj_json_value);
     if (obj_json_chars != NULL) {
+      // TODO(lgm): strlen
       JSValue enumerable_props = JS_ParseJSON(ctx, obj_json_chars, strlen(obj_json_chars), "<dump>");
       JS_FreeCString(ctx, obj_json_chars);
       if (!JS_IsException(enumerable_props)) {
